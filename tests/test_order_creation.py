@@ -11,13 +11,13 @@ class TestOrderCreation:
     def order_data(self):
         """Базовые данные для заказа"""
         return {
-            "firstName": generate_random_string(10),
-            "lastName": generate_random_string(10),
+            "first_name": generate_random_string(10),
+            "last_name": generate_random_string(10),
             "address": "г. Москва, ул. Тестовая, д. 1",
-            "metroStation": 1,
+            "metro_station": 1,
             "phone": "+7 999 999 99 99",
-            "rentTime": 1,
-            "deliveryDate": "2026-07-15",
+            "rent_time": 1,
+            "delivery_date": "2026-07-15",
             "comment": "Тестовый заказ"
         }
     
