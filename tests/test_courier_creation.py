@@ -1,5 +1,6 @@
 import pytest
 import allure
+import requests
 from api.courier_api import CourierAPI
 from api.helpers import generate_random_string
 
@@ -62,7 +63,7 @@ class TestCourierCreation:
         
         assert response.status_code == 201
     
-    @allure.title('Успешный запрос возвращает {"ok":true}')
+    @allure.title('Успешный запрос возвращает ok true')
     def test_create_courier_success_response(self):
         login = generate_random_string(10)
         password = generate_random_string(10)
