@@ -1,10 +1,12 @@
+import allure
 import requests
+from constants.urls import Urls
 
 
 class OrderAPI:
-    BASE_URL = 'https://qa-scooter.praktikum-services.ru/api/v1'
     
     @staticmethod
+    @allure.step("Создание заказа для {first_name} {last_name}")
     def create_order(first_name, last_name, address, metro_station, phone,
                      rent_time, delivery_date, comment, color=None):
         """Создание заказа"""
@@ -21,22 +23,19 @@ class OrderAPI:
         if color:
             payload["color"] = color
             
-        return requests.post(
-            f'{OrderAPI.BASE_URL}/orders',
-            json=payload
-        )
+        return requests.post(Urls.get_orders_url(), json=payload)
     
     @staticmethod
+    @allure.step("Получение списка заказов")
     def get_orders():
         """Получение списка заказов"""
-        return requests.get(
-            f'{OrderAPI.BASE_URL}/orders'
-        )
+        return requests.get(Urls.get_orders_url())
     
     @staticmethod
+    @allure.step("Отмена заказа по треку: {track}")
     def cancel_order(track):
         """Отмена заказа по треку"""
         return requests.put(
-            f'{OrderAPI.BASE_URL}/orders/cancel',
+            Urls.get_orders_url() + '/cancel',
             params={'track': track}
         )
