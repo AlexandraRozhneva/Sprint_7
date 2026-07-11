@@ -2,7 +2,10 @@ import pytest
 import allure
 import requests
 from api.courier_api import CourierAPI
-from api.helpers import generate_random_string, register_new_courier_and_return_login_password
+from constants.urls import Urls
+from constants.messages import ErrorMessages
+from helpers.data_generators import generate_random_login, generate_random_password
+from helpers.courier_helpers import register_new_courier_and_return_login_password
 
 
 @allure.feature('Логин курьера')
@@ -19,82 +22,47 @@ class TestCourierLogin:
             assert response.status_code == 200
             assert 'id' in response.json()
     
-    @allure.title('Для авторизации нужно передать все обязательные поля')
+    @allure.title('Для авторизации нужны все обязательные поля')
     @pytest.mark.parametrize('missing_field', ['login', 'password'])
-    def test_login_missing_field(self, missing_field):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
+    def test_login_missing_fields(self, missing_field):
+        login = generate_random_login()
+        password = generate_random_password()
         
         payload = {"login": login, "password": password}
-        if missing_field == 'login':
-            payload.pop('login')
-        else:
-            payload.pop('password')
+        payload.pop(missing_field)
         
-        response = requests.post(
-            'https://qa-scooter.praktikum-services.ru/api/v1/courier/login',
-            data=payload
-        )
+        response = requests.post(Urls.get_courier_login_url(), data=payload)
         
-        # API может возвращать 400 или 504 в зависимости от состояния сервера
-        assert response.status_code in [400, 504]
-        if response.status_code == 400:
-            assert "Недостаточно данных" in response.text
+        assert response.status_code == 400
+        assert ErrorMessages.NOT_ENOUGH_DATA in response.text
     
-    @allure.title('Система возвращает ошибку при неправильном логине')
+    @allure.title('Неправильный логин возвращает ошибку')
     def test_login_wrong_login(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
+        login = generate_random_login()
+        password = generate_random_password()
         
         response = CourierAPI.login_courier(login, password)
         
         assert response.status_code == 404
-        assert "Учетная запись не найдена" in response.text
+        assert ErrorMessages.ACCOUNT_NOT_FOUND in response.text
     
-    @allure.title('Система возвращает ошибку при неправильном пароле')
+    @allure.title('Неправильный пароль возвращает ошибку')
     def test_login_wrong_password(self):
         courier_data = register_new_courier_and_return_login_password()
         if courier_data:
             login, password, first_name = courier_data
             
-            # Пытаемся авторизоваться с неправильным паролем
             response = CourierAPI.login_courier(login, password + "wrong")
             
             assert response.status_code == 404
-            assert "Учетная запись не найдена" in response.text
+            assert ErrorMessages.ACCOUNT_NOT_FOUND in response.text
     
-    @allure.title('Запрос возвращает ошибку, если какого-то поля нет')
-    def test_login_missing_required_field(self):
-        login = generate_random_string(10)
-        payload = {"login": login}
-        
-        response = requests.post(
-            'https://qa-scooter.praktikum-services.ru/api/v1/courier/login',
-            data=payload
-        )
-        
-        # API может возвращать 400 или 504 в зависимости от состояния сервера
-        assert response.status_code in [400, 504]
-        if response.status_code == 400:
-            assert "Недостаточно данных" in response.text
-    
-    @allure.title('Авторизация под несуществующим пользователем возвращает ошибку')
+    @allure.title('Авторизация несуществующего пользователя возвращает ошибку')
     def test_login_nonexistent_user(self):
-        login = generate_random_string(15)
-        password = generate_random_string(15)
+        login = generate_random_login()
+        password = generate_random_password()
         
         response = CourierAPI.login_courier(login, password)
         
         assert response.status_code == 404
-        assert "Учетная запись не найдена" in response.text
-    
-    @allure.title('Успешный запрос возвращает id')
-    def test_login_success_returns_id(self):
-        courier_data = register_new_courier_and_return_login_password()
-        if courier_data:
-            login, password, first_name = courier_data
-            
-            response = CourierAPI.login_courier(login, password)
-            
-            assert response.status_code == 200
-            assert isinstance(response.json().get('id'), int)
+        assert ErrorMessages.ACCOUNT_NOT_FOUND in response.text
