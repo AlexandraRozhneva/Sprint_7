@@ -1,10 +1,12 @@
+import allure
 import requests
+from constants.urls import Urls
 
 
 class CourierAPI:
-    BASE_URL = 'https://qa-scooter.praktikum-services.ru/api/v1'
     
     @staticmethod
+    @allure.step("Создание курьера с логином: {login}")
     def create_courier(login, password, first_name=None):
         """Создание курьера"""
         payload = {
@@ -14,26 +16,20 @@ class CourierAPI:
         if first_name:
             payload["firstName"] = first_name
             
-        return requests.post(
-            f'{CourierAPI.BASE_URL}/courier',
-            data=payload
-        )
+        return requests.post(Urls.get_courier_url(), data=payload)
     
     @staticmethod
+    @allure.step("Авторизация курьера с логином: {login}")
     def login_courier(login, password):
         """Авторизация курьера"""
         payload = {
             "login": login,
             "password": password
         }
-        return requests.post(
-            f'{CourierAPI.BASE_URL}/courier/login',
-            data=payload
-        )
+        return requests.post(Urls.get_courier_login_url(), data=payload)
     
     @staticmethod
+    @allure.step("Удаление курьера с ID: {courier_id}")
     def delete_courier(courier_id):
         """Удаление курьера"""
-        return requests.delete(
-            f'{CourierAPI.BASE_URL}/courier/{courier_id}'
-        )
+        return requests.delete(Urls.get_courier_delete_url(courier_id))
