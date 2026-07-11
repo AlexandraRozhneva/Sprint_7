@@ -1,25 +1,29 @@
 import pytest
-import random
-from api.helpers import register_new_courier_and_return_login_password, login_courier, delete_courier
+from helpers.data_generators import generate_random_login, generate_random_password, generate_random_first_name
+from constants.test_data import OrderTestData
 
 
 @pytest.fixture
-def create_and_delete_courier():
-    """Фикстура для создания и удаления курьера"""
-    courier_data = register_new_courier_and_return_login_password()
-    if courier_data:
-        login, password, first_name = courier_data
-        courier_id = login_courier(login, password)
-        yield login, password, first_name, courier_id
-        if courier_id:
-            delete_courier(courier_id)
-    else:
-        yield None, None, None, None
+def order_data():
+    """Базовые данные для заказа"""
+    return {
+        "first_name": generate_random_first_name(),
+        "last_name": generate_random_first_name(),
+        "address": OrderTestData.DEFAULT_ADDRESS,
+        "metro_station": OrderTestData.DEFAULT_METRO_STATION,
+        "phone": OrderTestData.DEFAULT_PHONE,
+        "rent_time": OrderTestData.DEFAULT_RENT_TIME,
+        "delivery_date": OrderTestData.DEFAULT_DELIVERY_DATE,
+        "comment": OrderTestData.DEFAULT_COMMENT
+    }
 
 
 @pytest.fixture
-def courier_data():
-    """Фикстура с данными курьера"""
-    login = "test_courier_" + str(hash(str(random.random())))
-    password = "test_pass_" + str(hash(str(random.random())))
-    return login, password
+def order_colors():
+    """Данные для параметризации цветов"""
+    return [
+        OrderTestData.COLORS['BLACK'],
+        OrderTestData.COLORS['GREY'],
+        OrderTestData.COLORS['BOTH'],
+        OrderTestData.COLORS['NONE']
+    ]
