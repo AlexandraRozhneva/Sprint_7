@@ -36,15 +36,25 @@ class TestCourierCreation:
         assert ErrorMessages.LOGIN_ALREADY_USED in response2.text
     
     @allure.title('При создании курьера обязательны поля login и password')
-    @pytest.mark.parametrize('missing_field', ['login', 'password'])
-    def test_create_courier_missing_fields(self, missing_field):
-        login = generate_random_login()
-        password = generate_random_password()
-        
-        payload = {"login": login, "password": password}
-        payload.pop(missing_field)
-        
+    @pytest.mark.parametrize('missing_field, payload', [
+        ('login', {"password": generate_random_password()}),
+        ('password', {"login": generate_random_login()})
+    ])
+    def test_create_courier_missing_fields(self, missing_field, payload):
         response = requests.post(Urls.get_courier_url(), data=payload)
         
         assert response.status_code == 400
         assert ErrorMessages.NOT_ENOUGH_DATA in response.text
+    
+    @allure.title('Создание пользователя с уже существующим логином возвращает ошибку')
+    def test_create_courier_existing_login(self):
+        login = generate_random_login()
+        password = generate_random_password()
+        first_name = generate_random_first_name()
+        
+        response1 = CourierAPI.create_courier(login, password, first_name)
+        assert response1.status_code == 201
+        
+        response2 = CourierAPI.create_courier(login, generate_random_password())
+        assert response2.status_code == 409
+        assert ErrorMessages.LOGIN_ALREADY_USED in response2.text
