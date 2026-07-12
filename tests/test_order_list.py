@@ -21,7 +21,8 @@ class TestOrderList:
         
         assert response.status_code == 200
         orders = response.json().get('orders', [])
+        assert isinstance(orders, list)
         
-        if len(orders) > 0:
-            first_order = orders[0]
-            assert ('id' in first_order) or ('track' in first_order)
+        # Проверяем, что каждый заказ содержит поле id
+        for order in orders:
+            assert 'id' in order
